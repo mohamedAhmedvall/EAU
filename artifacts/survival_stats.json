@@ -1,0 +1,257 @@
+{
+  "by_material": [
+    {
+      "group": "A.C",
+      "n_total": 407,
+      "n_events": 87,
+      "event_rate": 21.375921375921376,
+      "median_survival": 114.89117043121149,
+      "q25_survival": 114.15195071868582,
+      "q50_survival": 114.89117043121149,
+      "q75_survival": 121.07049965776865
+    },
+    {
+      "group": "ACIE",
+      "n_total": 1752,
+      "n_events": 339,
+      "event_rate": 19.34931506849315,
+      "median_survival": Infinity,
+      "q25_survival": 66.92676249144422,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "AUTRE",
+      "n_total": 5681,
+      "n_events": 41,
+      "event_rate": 0.7217039253652526,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "BTM",
+      "n_total": 2390,
+      "n_events": 323,
+      "event_rate": 13.514644351464435,
+      "median_survival": 117.32511978097193,
+      "q25_survival": 70.26146475017111,
+      "q50_survival": 117.32511978097193,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "FT",
+      "n_total": 109448,
+      "n_events": 12089,
+      "event_rate": 11.045427965791975,
+      "median_survival": Infinity,
+      "q25_survival": 56.290212183436005,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "FTG",
+      "n_total": 57942,
+      "n_events": 16033,
+      "event_rate": 27.67077422249836,
+      "median_survival": Infinity,
+      "q25_survival": 66.24229979466119,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "FTVI",
+      "n_total": 12307,
+      "n_events": 184,
+      "event_rate": 1.4950840984805396,
+      "median_survival": 53.33607118412046,
+      "q25_survival": 53.33607118412046,
+      "q50_survival": 53.33607118412046,
+      "q75_survival": 53.33607118412046
+    },
+    {
+      "group": "PEHD",
+      "n_total": 8604,
+      "n_events": 686,
+      "event_rate": 7.97303579730358,
+      "median_survival": Infinity,
+      "q25_survival": 120.95824777549623,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "POLY",
+      "n_total": 7611,
+      "n_events": 1742,
+      "event_rate": 22.887925371173303,
+      "median_survival": Infinity,
+      "q25_survival": 56.969199178644764,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "PVC",
+      "n_total": 4198,
+      "n_events": 555,
+      "event_rate": 13.22058122915674,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    }
+  ],
+  "by_decade": [
+    {
+      "group": "1900s",
+      "n_total": 17099,
+      "n_events": 997,
+      "event_rate": 5.830750336276975,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1940s",
+      "n_total": 17043,
+      "n_events": 7945,
+      "event_rate": 46.61737956932465,
+      "median_survival": Infinity,
+      "q25_survival": 63.3264887063655,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1950s",
+      "n_total": 10161,
+      "n_events": 3172,
+      "event_rate": 31.217399862218286,
+      "median_survival": Infinity,
+      "q25_survival": 66.81998631074606,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1960s",
+      "n_total": 28125,
+      "n_events": 6859,
+      "event_rate": 24.387555555555554,
+      "median_survival": Infinity,
+      "q25_survival": 61.9958932238193,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1970s",
+      "n_total": 29195,
+      "n_events": 4359,
+      "event_rate": 14.930638808015072,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1980s",
+      "n_total": 21744,
+      "n_events": 1959,
+      "event_rate": 9.009381898454746,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1990s",
+      "n_total": 13171,
+      "n_events": 1571,
+      "event_rate": 11.927719990889074,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "2000s",
+      "n_total": 22670,
+      "n_events": 3707,
+      "event_rate": 16.35200705778562,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "2010s",
+      "n_total": 30131,
+      "n_events": 1340,
+      "event_rate": 4.447247021340148,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "2020s",
+      "n_total": 21564,
+      "n_events": 203,
+      "event_rate": 0.9413837877944723,
+      "median_survival": Infinity,
+      "q25_survival": Infinity,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    }
+  ],
+  "by_anomaly_group": [
+    {
+      "group": "0",
+      "n_total": 199499,
+      "n_events": 28678,
+      "event_rate": 14.375009398543352,
+      "median_survival": Infinity,
+      "q25_survival": 63.94798083504449,
+      "q50_survival": Infinity,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "1",
+      "n_total": 8010,
+      "n_events": 2068,
+      "event_rate": 25.81772784019975,
+      "median_survival": 107.57837097878166,
+      "q25_survival": 62.0807665982204,
+      "q50_survival": 107.57837097878166,
+      "q75_survival": Infinity
+    },
+    {
+      "group": "2-3",
+      "n_total": 2967,
+      "n_events": 1009,
+      "event_rate": 34.00741489720256,
+      "median_survival": 75.11567419575633,
+      "q25_survival": 61.50855578370979,
+      "q50_survival": 75.11567419575633,
+      "q75_survival": 122.74880219028063
+    },
+    {
+      "group": "4+",
+      "n_total": 1330,
+      "n_events": 514,
+      "event_rate": 38.64661654135338,
+      "median_survival": 71.05544147843942,
+      "q25_survival": 57.256673511293634,
+      "q50_survival": 71.05544147843942,
+      "q75_survival": Infinity
+    }
+  ],
+  "global": {
+    "global": {
+      "n_total": 211806,
+      "n_events": "32269",
+      "event_rate": 15.23516803112282,
+      "median_survival": Infinity,
+      "mean_duration_observed": 43.65833390224856
+    }
+  }
+}
