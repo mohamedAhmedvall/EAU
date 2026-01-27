@@ -85,6 +85,12 @@ def confusion_topk(y_true, scores, k_pct=0.10):
 # ---------------------------------------------------------------------------
 
 def load_base_dataset():
+    try:
+        import numpy.core.numeric as np_numeric
+        import sys
+        sys.modules.setdefault("numpy._core.numeric", np_numeric)
+    except ImportError:
+        pass
     df = pd.read_pickle(BASE_DATASET)
     return df.copy()
 
@@ -189,6 +195,7 @@ def compute_age_extreme_impact(df_eval: pd.DataFrame, age_cap: int, top_mask: np
 def reliability_bins(y_true: pd.Series, scores: np.ndarray, n_bins: int = 10):
     df_tmp = pd.DataFrame({"y": y_true.values, "score": scores})
     df_tmp["bin"] = pd.qcut(df_tmp["score"], q=n_bins, duplicates="drop")
+    df_tmp["bin"] = df_tmp["bin"].astype(str)
     return (
         df_tmp.groupby("bin")
         .agg(avg_score=("score", "mean"), event_rate=("y", "mean"), n=("y", "size"))
@@ -397,7 +404,7 @@ def run_M2(df, feature_cols, event_col="event_mod"):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=RANDOM_SEED, stratify=y
     )
-    print(f\"[M2] train {len(X_train):,} / test {len(X_test):,} (pos {y_train.sum():,})\")
+    print(f"[M2] train {len(X_train):,} / test {len(X_test):,} (pos {y_train.sum():,})")
 
     # Monotone constraints aligned to feature order
     mono = []
