@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 # Chemins
-BASE_DIR = Path(r"c:\Users\ahmed\OneDrive\Bureau\EAU")
+BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 SRC_DIR = BASE_DIR / "src"
 REPORTS_DIR = BASE_DIR / "reports"
