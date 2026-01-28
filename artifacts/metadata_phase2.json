@@ -1,7 +1,7 @@
 {
-  "version": "M4_competing_iso",
+  "model_retenu": "M1c_competing",
   "horizon_years": 1,
-  "feature_cols": [
+  "features": [
     "age_at_freeze",
     "diametre",
     "longueur",
@@ -26,22 +26,20 @@
     "decade_install_encoded",
     "age_cap",
     "age_extreme_flag",
-    "age_winsor",
     "age_ratio_decade",
-    "age_residual_mat"
+    "age_residual_mat",
+    "age_winsor"
   ],
-  "calibration": "isotonic",
-  "abandon_filter": "event_clean",
+  "calibration": null,
   "metrics": {
-    "roc_auc": 0.8490519460513519,
-    "lift_10": 6.212121212121212,
-    "cap_10": 0.6212121212121212,
-    "brier": 0.010393360193229517,
-    "ece": 0.004502458549350418,
-    "fn": 150,
-    "fp": 3328
+    "roc_auc": 0.9152011959997945,
+    "lift_10": 6.666666666666666,
+    "cap_10": 0.6666666666666666,
+    "brier": 0.01018010524247232,
+    "ece": 0.0013648212734296383,
+    "fn": 132,
+    "fp": 3310
   },
   "risque_attendu": "proba_calibree * longueur_km",
-  "pret_optimisation": true,
-  "model_file": "model_M_star.joblib"
+  "pret_optimisation": true
 }
