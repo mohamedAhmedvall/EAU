@@ -24,8 +24,9 @@ pip-log.txt
 # Data files volumineux (ne pas commiter)
 # Decommenter si vous ne voulez pas versionner les donnees
 # data/*.csv
-# artifacts/*.pkl
-# artifacts/*.joblib
+artifacts/*.pkl
+artifacts/*.joblib
+reports/**/plots/*.png
 
 # Logs
 *.log
