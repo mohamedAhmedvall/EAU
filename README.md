@@ -58,6 +58,23 @@ pip install -r requirements.txt
 
 ## Utilisation
 
+### 0. Entraîner et comparer plusieurs horizons
+
+```bash
+# (Optionnel) reconstruire les datasets puis entraîner sur plusieurs horizons
+python train.py --horizons 1,3,5 --build-dataset
+```
+
+### 0.b Évaluer une phase
+
+```bash
+# Phase 1 (audit baseline)
+python evaluate.py --phase phase1
+
+# Phase 2 (itérations) pour un horizon donné
+python evaluate.py --phase phase2 --horizon 3
+```
+
 ### 1. Prédiction en Python
 
 ```python
@@ -83,6 +100,17 @@ priorites = get_prioritized_list(
     top_k_pct=0.10
 )
 print(priorites.head(20))
+```
+
+### 1.b Scoring reproductible (script)
+
+```bash
+python score.py \
+  --assets data/v1_trafic_prepared.csv \
+  --anomalies data/historiqueanomalie.csv \
+  --freeze-date 2024-01-01 \
+  --horizon 1 \
+  --output reports/scores.csv
 ```
 
 ### 2. API REST

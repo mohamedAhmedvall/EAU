@@ -35,10 +35,19 @@ import lightgbm as lgb
 
 from config import ARTIFACTS_DIR, REPORTS_DIR, RANDOM_SEED, TOP_K_PERCENTAGES
 
-PHASE2_DIR = REPORTS_DIR / "phase2"
-PHASE2_DIR.mkdir(parents=True, exist_ok=True)
-PLOTS_DIR = PHASE2_DIR / "plots"
-PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+DEFAULT_HORIZON = 1
+
+
+def get_output_dirs(horizon: int):
+    phase2_dir = REPORTS_DIR / f"phase2_h{horizon}"
+    phase2_dir.mkdir(parents=True, exist_ok=True)
+    plots_dir = phase2_dir / "plots"
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    return phase2_dir, plots_dir
+
+
+def horizon_suffix(horizon: int) -> str:
+    return "" if horizon == DEFAULT_HORIZON else f"_h{horizon}"
 
 # ===================================================================
 # 1. UTILITY FUNCTIONS
@@ -138,10 +147,23 @@ def ece_score(y_true, y_prob, n_bins=10):
 # 2. DATA LOADING & FEATURE PREPARATION
 # ===================================================================
 
-def load_data():
-    df = pd.read_pickle(ARTIFACTS_DIR / "dataset_freeze_h1.pkl")
-    print(f"Dataset charge: {len(df):,} lignes, {df['event'].sum():,} evenements "
-          f"({100*df['event'].mean():.2f}%)")
+def load_data(horizon: int):
+    dataset_path = ARTIFACTS_DIR / f"dataset_freeze_h{horizon}.pkl"
+    try:
+        df = pd.read_pickle(dataset_path)
+    except Exception as exc:
+        csv_path = ARTIFACTS_DIR / f"dataset_freeze_h{horizon}.csv"
+        print(
+            f"[WARN] Impossible de lire {dataset_path} ({exc}). "
+            f"Chargement du CSV {csv_path}."
+        )
+        df = pd.read_csv(csv_path)
+        if "event" in df.columns:
+            df["event"] = df["event"].astype(int)
+    print(
+        f"Dataset charge (h{horizon}): {len(df):,} lignes, "
+        f"{df['event'].sum():,} evenements ({100*df['event'].mean():.2f}%)"
+    )
     return df
 
 
@@ -336,7 +358,7 @@ def calibrate(train_scores, train_labels, test_scores):
 # 7. PLOTTING
 # ===================================================================
 
-def plot_comparison_bar(metrics_list, metric_key, title, fname):
+def plot_comparison_bar(metrics_list, metric_key, title, fname, plots_dir: Path):
     """Bar chart comparant un metric entre modèles."""
     labels = [m["label"] for m in metrics_list]
     vals = [m[metric_key] for m in metrics_list]
@@ -349,11 +371,11 @@ def plot_comparison_bar(metrics_list, metric_key, title, fname):
     ax.set_title(title)
     ax.set_ylabel(metric_key)
     plt.tight_layout()
-    plt.savefig(PLOTS_DIR / fname, dpi=150)
+    plt.savefig(plots_dir / fname, dpi=150)
     plt.close()
 
 
-def plot_calibration_curves(y_true, scores_dict, fname):
+def plot_calibration_curves(y_true, scores_dict, fname, plots_dir: Path):
     """Reliability diagram for multiple score sets."""
     fig, ax = plt.subplots(figsize=(7, 6))
     ax.plot([0, 1], [0, 1], "k--", label="Parfaitement calibre")
@@ -365,11 +387,11 @@ def plot_calibration_curves(y_true, scores_dict, fname):
     ax.set_title("Courbe de calibration")
     ax.legend()
     plt.tight_layout()
-    plt.savefig(PLOTS_DIR / fname, dpi=150)
+    plt.savefig(plots_dir / fname, dpi=150)
     plt.close()
 
 
-def plot_segment_comparison(seg_before, seg_after, col, fname):
+def plot_segment_comparison(seg_before, seg_after, col, fname, plots_dir: Path):
     """Comparer capture@10% par segment entre deux modèles."""
     merged = seg_before[["segment", "capture"]].merge(
         seg_after[["segment", "capture"]], on="segment", suffixes=("_before", "_after"))
@@ -386,11 +408,11 @@ def plot_segment_comparison(seg_before, seg_after, col, fname):
     ax.set_title(f"Capture@10% par {col}")
     ax.legend()
     plt.tight_layout()
-    plt.savefig(PLOTS_DIR / fname, dpi=150)
+    plt.savefig(plots_dir / fname, dpi=150)
     plt.close()
 
 
-def plot_score_distributions(scores_dict, fname):
+def plot_score_distributions(scores_dict, fname, plots_dir: Path):
     fig, ax = plt.subplots(figsize=(8, 5))
     for name, sc in scores_dict.items():
         ax.hist(sc, bins=50, alpha=0.5, label=name, density=True)
@@ -399,11 +421,11 @@ def plot_score_distributions(scores_dict, fname):
     ax.set_title("Distribution des scores")
     ax.legend()
     plt.tight_layout()
-    plt.savefig(PLOTS_DIR / fname, dpi=150)
+    plt.savefig(plots_dir / fname, dpi=150)
     plt.close()
 
 
-def plot_lift_curves(y_true, scores_dict, fname):
+def plot_lift_curves(y_true, scores_dict, fname, plots_dir: Path):
     fig, ax = plt.subplots(figsize=(8, 5))
     pcts = np.arange(1, 51)
     for name, sc in scores_dict.items():
@@ -425,21 +447,43 @@ def plot_lift_curves(y_true, scores_dict, fname):
     ax.legend()
     ax.axhline(y=1, color="gray", linestyle="--", alpha=0.5)
     plt.tight_layout()
-    plt.savefig(PLOTS_DIR / fname, dpi=150)
+    plt.savefig(plots_dir / fname, dpi=150)
     plt.close()
+
+
+def dataframe_to_markdown(df: pd.DataFrame) -> str:
+    try:
+        return df.to_markdown(index=False)
+    except Exception:
+        headers = [str(col) for col in df.columns]
+        sep = "| " + " | ".join(headers) + " |"
+        sep_line = "| " + " | ".join(["---"] * len(headers)) + " |"
+        rows = []
+        for row in df.itertuples(index=False):
+            values = []
+            for val in row:
+                if isinstance(val, float):
+                    values.append(f"{val:.4f}")
+                else:
+                    values.append(str(val))
+            rows.append("| " + " | ".join(values) + " |")
+        return "\n".join([sep, sep_line] + rows)
 
 
 # ===================================================================
 # 8. MAIN PIPELINE
 # ===================================================================
 
-def main():
+def main(horizon: int = DEFAULT_HORIZON):
     print("=" * 70)
     print("PHASE 2 — AMELIORATION ITERATIVE DU MODELE")
     print("=" * 70)
+    print(f"Horizon analyse: {horizon} an(s)")
+
+    phase2_dir, plots_dir = get_output_dirs(horizon)
 
     # ----- LOAD DATA -----
-    df_raw = load_data()
+    df_raw = load_data(horizon)
     df = add_age_features(df_raw)
     df = flag_preventive_abandon(df)
     df, encoders_base = encode_categoricals(df)
@@ -763,7 +807,7 @@ def main():
         ))
     df_summary = pd.DataFrame(rows_summary)
     print("\n" + df_summary.to_string(index=False))
-    df_summary.to_csv(PHASE2_DIR / "comparison_M0_M1_M2.csv", index=False)
+    df_summary.to_csv(phase2_dir / "comparison_M0_M1_M2.csv", index=False)
 
     # --- CHOOSE M* ---
     # Priority: Lift@10% (must not degrade), then Brier, then FN
@@ -795,39 +839,80 @@ def main():
     print("\n  Generation des graphiques...")
 
     # Comparison bars
-    plot_comparison_bar(all_models, "lift_10", "Lift@10% — M0 vs M1 vs M2",
-                        "comparison_lift10.png")
-    plot_comparison_bar(all_models, "cap_10", "Capture@10% — M0 vs M1 vs M2",
-                        "comparison_cap10.png")
-    plot_comparison_bar(all_models, "brier", "Brier Score — M0 vs M1 vs M2",
-                        "comparison_brier.png")
-    plot_comparison_bar(all_models, "ece", "ECE — M0 vs M1 vs M2",
-                        "comparison_ece.png")
+    plot_comparison_bar(
+        all_models,
+        "lift_10",
+        "Lift@10% — M0 vs M1 vs M2",
+        "comparison_lift10.png",
+        plots_dir,
+    )
+    plot_comparison_bar(
+        all_models,
+        "cap_10",
+        "Capture@10% — M0 vs M1 vs M2",
+        "comparison_cap10.png",
+        plots_dir,
+    )
+    plot_comparison_bar(
+        all_models,
+        "brier",
+        "Brier Score — M0 vs M1 vs M2",
+        "comparison_brier.png",
+        plots_dir,
+    )
+    plot_comparison_bar(
+        all_models,
+        "ece",
+        "ECE — M0 vs M1 vs M2",
+        "comparison_ece.png",
+        plots_dir,
+    )
 
     # Calibration curves
-    plot_calibration_curves(y_te_orig_2, {
-        "M0 (raw)": res_m0["scores"],
-        f"{m2_raw_best_name} (raw)": scores_te_raw,
-        f"{m2_raw_best_name} (iso)": iso_scores,
-        f"{m2_raw_best_name} (platt)": platt_scores,
-    }, "calibration_curves.png")
+    plot_calibration_curves(
+        y_te_orig_2,
+        {
+            "M0 (raw)": res_m0["scores"],
+            f"{m2_raw_best_name} (raw)": scores_te_raw,
+            f"{m2_raw_best_name} (iso)": iso_scores,
+            f"{m2_raw_best_name} (platt)": platt_scores,
+        },
+        "calibration_curves.png",
+        plots_dir,
+    )
 
     # Score distributions
-    plot_score_distributions({r["label"]: r["scores"] for r in all_models},
-                             "score_distributions.png")
+    plot_score_distributions(
+        {r["label"]: r["scores"] for r in all_models},
+        "score_distributions.png",
+        plots_dir,
+    )
 
     # Lift curves
-    plot_lift_curves(y_te_orig_2,
-                     {r["label"]: r["scores"] for r in all_models},
-                     "lift_curves.png")
+    plot_lift_curves(
+        y_te_orig_2,
+        {r["label"]: r["scores"] for r in all_models},
+        "lift_curves.png",
+        plots_dir,
+    )
 
     # Segment comparisons
     if not res_m0["seg_materiau"].empty and not best_model_res["seg_materiau"].empty:
-        plot_segment_comparison(res_m0["seg_materiau"], best_model_res["seg_materiau"],
-                                "materiau", "segment_materiau_before_after.png")
+        plot_segment_comparison(
+            res_m0["seg_materiau"],
+            best_model_res["seg_materiau"],
+            "materiau",
+            "segment_materiau_before_after.png",
+            plots_dir,
+        )
     if not res_m0["seg_decade"].empty and not best_model_res["seg_decade"].empty:
-        plot_segment_comparison(res_m0["seg_decade"], best_model_res["seg_decade"],
-                                "decade", "segment_decade_before_after.png")
+        plot_segment_comparison(
+            res_m0["seg_decade"],
+            best_model_res["seg_decade"],
+            "decade",
+            "segment_decade_before_after.png",
+            plots_dir,
+        )
 
     # Score variance by segment
     print("\n  Stabilite intra-segment (variance scores):")
@@ -846,20 +931,30 @@ def main():
     print("SAUVEGARDE DES ARTEFACTS")
     print("=" * 70)
 
+    suffix = horizon_suffix(horizon)
+
     # M0
-    artifact_m0 = dict(model=model_m0, encoders=encoders_base,
-                        metadata=dict(version="M0_baseline", horizon_years=1,
-                                      feature_cols=features_m0))
-    joblib.dump(artifact_m0, ARTIFACTS_DIR / "model_M0.joblib")
+    artifact_m0 = dict(
+        model=model_m0,
+        encoders=encoders_base,
+        metadata=dict(version="M0_baseline", horizon_years=horizon, feature_cols=features_m0),
+    )
+    joblib.dump(artifact_m0, ARTIFACTS_DIR / f"model_M0{suffix}.joblib")
 
     # Best M1
     model_m1_final = res_m1["model"]
-    artifact_m1 = dict(model=model_m1_final, encoders=encoders_base,
-                        metadata=dict(version=m1_best_name, horizon_years=1,
-                                      feature_cols=features_m1_best,
-                                      abandon_filter=True,
-                                      abandon_heuristic="no_anom + ratio<0.6 + age<15"))
-    joblib.dump(artifact_m1, ARTIFACTS_DIR / "model_M1_best.joblib")
+    artifact_m1 = dict(
+        model=model_m1_final,
+        encoders=encoders_base,
+        metadata=dict(
+            version=m1_best_name,
+            horizon_years=horizon,
+            feature_cols=features_m1_best,
+            abandon_filter=True,
+            abandon_heuristic="no_anom + ratio<0.6 + age<15",
+        ),
+    )
+    joblib.dump(artifact_m1, ARTIFACTS_DIR / f"model_M1_best{suffix}.joblib")
 
     # M2
     calibrator = None
@@ -872,30 +967,35 @@ def main():
         cal_type = "platt"
 
     artifact_m2 = dict(
-        model=model_m2_raw, encoders=encoders_base,
+        model=model_m2_raw,
+        encoders=encoders_base,
         calibrator=dict(type=cal_type, model=calibrator) if calibrator else None,
-        metadata=dict(version=best_cal_name, horizon_years=1,
-                      feature_cols=features_m1_best,
-                      monotone_constraints=mono if m2_raw_best_name == "M2a" else None,
-                      calibration=cal_type,
-                      regularization=params_m2))
-    joblib.dump(artifact_m2, ARTIFACTS_DIR / "model_M2_best.joblib")
+        metadata=dict(
+            version=best_cal_name,
+            horizon_years=horizon,
+            feature_cols=features_m1_best,
+            monotone_constraints=mono if m2_raw_best_name == "M2a" else None,
+            calibration=cal_type,
+            regularization=params_m2,
+        ),
+    )
+    joblib.dump(artifact_m2, ARTIFACTS_DIR / f"model_M2_best{suffix}.joblib")
 
     # M* (final)
     if best_model_res["label"] == res_m0["label"]:
-        joblib.dump(artifact_m0, ARTIFACTS_DIR / "model_M_star.joblib")
+        joblib.dump(artifact_m0, ARTIFACTS_DIR / f"model_M_star{suffix}.joblib")
         star_features = features_m0
     elif best_model_res["label"] == res_m1["label"]:
-        joblib.dump(artifact_m1, ARTIFACTS_DIR / "model_M_star.joblib")
+        joblib.dump(artifact_m1, ARTIFACTS_DIR / f"model_M_star{suffix}.joblib")
         star_features = features_m1_best
     else:
-        joblib.dump(artifact_m2, ARTIFACTS_DIR / "model_M_star.joblib")
+        joblib.dump(artifact_m2, ARTIFACTS_DIR / f"model_M_star{suffix}.joblib")
         star_features = features_m1_best
 
     # Metadata JSON
     metadata_final = dict(
         model_retenu=best_model_res["label"],
-        horizon_years=1,
+        horizon_years=horizon,
         features=star_features,
         calibration=cal_type if best_model_res["label"] == res_m2["label"] else None,
         metrics=dict(
@@ -910,7 +1010,7 @@ def main():
         risque_attendu="proba_calibree * longueur_km",
         pret_optimisation=True,
     )
-    with open(ARTIFACTS_DIR / "metadata_phase2.json", "w") as f:
+    with open(ARTIFACTS_DIR / f"metadata_phase2{suffix}.json", "w") as f:
         json.dump(metadata_final, f, indent=2, default=str)
 
     print(f"  Artefacts sauvegardes dans {ARTIFACTS_DIR}")
@@ -922,7 +1022,7 @@ def main():
 
     report = []
     report.append("# Rapport PHASE 2 — Amelioration du modele de renouvellement\n")
-    report.append(f"*Genere automatiquement*\n")
+    report.append(f"*Genere automatiquement (horizon: {horizon} an(s))*\n")
     report.append("---\n")
 
     # Section 1: Rappel Phase 1
@@ -985,22 +1085,30 @@ def main():
 
     # Section 4: Comparaison finale
     report.append("## 4. Iteration 3 — Comparaison finale\n")
-    report.append(df_summary.to_markdown(index=False))
+    report.append(dataframe_to_markdown(df_summary))
     report.append("")
 
     # Section 5: Stabilite segments
     report.append("## 5. Stabilite par segments\n")
     report.append("### Par materiau (M*)\n")
     if not best_model_res["seg_materiau"].empty:
-        report.append(best_model_res["seg_materiau"][
-            ["segment", "n", "events", "capture", "fn_rate", "avg_score"]
-        ].to_markdown(index=False))
+        report.append(
+            dataframe_to_markdown(
+                best_model_res["seg_materiau"][
+                    ["segment", "n", "events", "capture", "fn_rate", "avg_score"]
+                ]
+            )
+        )
     report.append("")
     report.append("### Par decennie (M*)\n")
     if not best_model_res["seg_decade"].empty:
-        report.append(best_model_res["seg_decade"][
-            ["segment", "n", "events", "capture", "fn_rate", "avg_score"]
-        ].to_markdown(index=False))
+        report.append(
+            dataframe_to_markdown(
+                best_model_res["seg_decade"][
+                    ["segment", "n", "events", "capture", "fn_rate", "avg_score"]
+                ]
+            )
+        )
     report.append("")
 
     # Section 6: Recommandation
@@ -1031,18 +1139,18 @@ def main():
     report.append("## 7. Artefacts generes\n")
     report.append("| Fichier | Description |")
     report.append("|---------|-------------|")
-    report.append("| `model_M0.joblib` | Baseline LightGBM |")
-    report.append("| `model_M1_best.joblib` | Meilleur M1 (corrections biais) |")
-    report.append("| `model_M2_best.joblib` | M2 avec calibration |")
-    report.append("| `model_M_star.joblib` | Modele final retenu |")
-    report.append("| `metadata_phase2.json` | Metadata complete |")
+    report.append(f"| `model_M0{suffix}.joblib` | Baseline LightGBM |")
+    report.append(f"| `model_M1_best{suffix}.joblib` | Meilleur M1 (corrections biais) |")
+    report.append(f"| `model_M2_best{suffix}.joblib` | M2 avec calibration |")
+    report.append(f"| `model_M_star{suffix}.joblib` | Modele final retenu |")
+    report.append(f"| `metadata_phase2{suffix}.json` | Metadata complete |")
     report.append("| `comparison_M0_M1_M2.csv` | Tableau comparatif |")
     report.append("| `plots/` | Graphiques AVANT/APRES |")
     report.append("")
 
     report_text = "\n".join(report)
-    (PHASE2_DIR / "rapport_phase2.md").write_text(report_text, encoding="utf-8")
-    print(f"  Rapport sauvegarde: {PHASE2_DIR / 'rapport_phase2.md'}")
+    (phase2_dir / "rapport_phase2.md").write_text(report_text, encoding="utf-8")
+    print(f"  Rapport sauvegarde: {phase2_dir / 'rapport_phase2.md'}")
 
     # Summary JSON
     summary_json = dict(
@@ -1059,7 +1167,7 @@ def main():
                 fn=res_m2["conf"]["FN"]),
         M_star=best_model_res["label"],
     )
-    with open(PHASE2_DIR / "summary_phase2.json", "w") as f:
+    with open(phase2_dir / "summary_phase2.json", "w") as f:
         json.dump(summary_json, f, indent=2, default=str)
 
     print("\n" + "=" * 70)
@@ -1074,4 +1182,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Phase 2 model improvement")
+    parser.add_argument(
+        "--horizon",
+        type=int,
+        default=DEFAULT_HORIZON,
+        help="Horizon en annees (ex: 1, 3, 5).",
+    )
+    args = parser.parse_args()
+    main(args.horizon)
