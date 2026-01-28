@@ -25,7 +25,8 @@ pip-log.txt
 # Decommenter si vous ne voulez pas versionner les donnees
 # data/*.csv
 # artifacts/*.pkl
-# artifacts/*.joblib
+artifacts/*.joblib
+artifacts/*_v2.joblib
 
 # Logs
 *.log
