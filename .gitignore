@@ -43,3 +43,4 @@ Thumbs.db
 # Temp
 *.tmp
 nul
+catboost_info/
