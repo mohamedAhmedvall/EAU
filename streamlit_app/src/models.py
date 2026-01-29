@@ -76,7 +76,7 @@ class Scenario:
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     nom: str = ""
     description: str = ""
-    horizon_ans: int = 15
+    horizon_ans: int = 1  # Modèle ML fiable à horizon 1 an
     budget_annuel: float = 1_500_000
     lineaire_min_pct: float = 1.0  # % du réseau
     lineaire_max_pct: float = 2.5  # % du réseau
