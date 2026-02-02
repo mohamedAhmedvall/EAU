@@ -1,0 +1,22 @@
+{
+  "date": "2026-02-02T09:17:25.351998",
+  "results": {
+    "rsf": {
+      "c_index": 0.9532706148357565,
+      "integrated_brier_score": null
+    }
+  },
+  "features": [
+    "DIAMETRE",
+    "LNG",
+    "age",
+    "n_anomalies",
+    "MAT_enc",
+    "decade_enc",
+    "age_years",
+    "age_x_diam",
+    "anomaly_rate"
+  ],
+  "train_size": 24000,
+  "test_size": 6000
+}
