@@ -44,4 +44,5 @@ Thumbs.db
 *.tmp
 nul
 catboost_info/
-data/processed/dataset_clean.csv
+# Datasets générés (volumineux, régénérables par scripts)
+data/processed/*.csv
