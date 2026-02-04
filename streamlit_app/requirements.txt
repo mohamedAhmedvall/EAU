@@ -1,0 +1,28 @@
+# Core data
+pandas>=2.0.0
+numpy>=1.24.0
+
+# ML
+scikit-learn>=1.3.0
+lightgbm>=4.0.0
+joblib>=1.3.0
+
+# Streamlit
+streamlit>=1.30.0
+
+# Visualization
+plotly>=5.18.0
+
+# Optimization
+ortools>=9.7.0
+
+# Map (optional)
+folium>=0.15.0
+streamlit-folium>=0.15.0
+shapely>=2.0.0
+
+# Survival analysis (existing pipeline)
+lifelines>=0.27.0
+
+# Testing
+pytest>=7.0.0
